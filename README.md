@@ -20,9 +20,28 @@ Permanently eradicates orphaned Adobe background services, telemetry brokers (`L
 
 ---
 
+## Technical Overview & Slide Deck
+
+### Slide 1: The Illusion of Removal
+![The Illusion of Removal](docs/slides/slide_1.png)
+
+### Slide 2: Anatomy of a Zombie (The 3-Tier Resurrection Loop)
+![Anatomy of a Zombie](docs/slides/slide_2.png)
+
+### Slide 3: The NukeAdobe Protocol (6-Phase Eradication)
+![The NukeAdobe Protocol](docs/slides/slide_3.png)
+
+### Slide 4: The Collision Shield (Filesystem Locking)
+![The Collision Shield](docs/slides/slide_4.png)
+
+### Slide 5: Trust Through Transparency (Zero Dependencies & Full Auditability)
+![Trust Through Transparency](docs/slides/slide_5.png)
+
+---
+
 ## The Problem: The Adobe "Zombie" Architecture
 
-Commercial software packages frequently fail to uninstall cleanly. Even after running standard uninstallers or third-party cleanup tools, Adobe products leave behind a multi-tiered background persistence network:
+Commercial software packages frequently fail to uninstall cleanly. Even after running standard uninstallers or command-line cleanup tools, Adobe products leave behind a multi-tiered background persistence network:
 
 ### Windows:
 * **Task Scheduler:** `Adobe-Genuine-Software-Integrity-Scheduler`, `AdobeGCInvoker`
@@ -32,13 +51,22 @@ Commercial software packages frequently fail to uninstall cleanly. Even after ru
 ### macOS:
 * **LaunchDaemons & LaunchAgents:** `/Library/LaunchDaemons/com.adobe.*` and `~/Library/LaunchAgents/com.adobe.*`
 * **Privileged Helpers:** `/Library/PrivilegedHelperTools/com.adobe.*`
-* **Background daemons:** `AdobeGCClient`, `Adobe Desktop Service`, `Core Sync`, `CCXProcess`
+* **Background Daemons:** `AdobeGCClient`, `Adobe Desktop Service`, `Core Sync`, `CCXProcess`
 
 When a user deletes the app or monitor, background triggers notice the missing binary and command the updater to silently reinstall and reinstate the service.
 
 ---
 
-## The Solution: Eradication & Immunization
+## What Telemetry Is Being Sent?
+
+When Adobe Genuine Service (`AGMService.exe`) and `LogTransport2.exe` operate in the background, they transmit encrypted telemetry bundles back to Adobe analytics endpoints:
+1. **Hardware Fingerprints:** Machine UUID, MAC addresses, motherboard & CPU serials, and system hostname.
+2. **System & Process Inspection:** Active process list audits, system module hashes, and integrity scans of licensing DLLs.
+3. **Usage & Session Diagnostics:** Timestamps of computer activity, system wake cycles, and application error logs.
+
+---
+
+## The Solution: 6-Phase Eradication & Immunization
 
 `NukeAdobe` breaks this resurrection loop completely:
 
@@ -63,7 +91,7 @@ When a user deletes the app or monitor, background triggers notice the missing b
 4. Press `Y` to confirm.
 
 ### macOS
-1. Open Terminal in the repo folder.
+1. Open Terminal in the repository folder.
 2. Make executable and run with `sudo`:
    ```bash
    chmod +x nuke_adobe.sh
@@ -93,6 +121,12 @@ ls -la /Library/LaunchDaemons/com.adobe.*
 All commands return empty output.
 
 ---
+
+## Contributing & Disclaimer
+
+Pull requests are welcome! If you identify additional persistent binaries, telemetry endpoints, or registry keys introduced in newer Adobe software builds, feel free to submit an issue or PR.
+
+*Disclaimer: This tool is intended for personal computing sovereignty and system cleanup of orphaned, lingering, or unwanted software components after uninstallation.*
 
 ## License
 
