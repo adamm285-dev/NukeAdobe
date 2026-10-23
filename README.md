@@ -1,6 +1,6 @@
 # NukeAdobe 🚀
 
-> **Total nuclear uninstaller, background persistence cleaner, and immunization tool for Windows & macOS.**
+> **Total nuclear uninstaller, background persistence cleaner, and filesystem immunization tool for Windows & macOS.**
 
 Permanently eradicates Adobe creative applications, orphaned background services, telemetry brokers (`LogTransport2`, `AdobeIPCBroker`), updater daemons (`OOBE\PDApp`, `ARM`), LaunchDaemons, Task Scheduler hooks, and residual user caches—and installs **Immunization Shields** to prevent them from ever resurrecting.
 
@@ -20,6 +20,12 @@ Permanently eradicates Adobe creative applications, orphaned background services
 
 ---
 
+<p align="center">
+  <img src="docs/slides/slide_1.png" alt="The Problem of Zombie Software" width="100%">
+</p>
+
+---
+
 ## ⚠️ CRITICAL WARNING: THIS IS A TOTAL SYSTEM PURGE
 
 > [!WARNING]
@@ -36,7 +42,11 @@ Permanently eradicates Adobe creative applications, orphaned background services
 
 ---
 
-## Two Supported Use Cases
+## Two Supported Use Cases: The Illusion of Removal
+
+<p align="center">
+  <img src="docs/slides/slide_2.png" alt="The Illusion of Standard Uninstallation" width="100%">
+</p>
 
 ### 1. The "Ghost Hunter" (Post-Uninstall Persistence Cleaner)
 You ran Adobe's official uninstaller or command-line removal scripts months or years ago. You assumed Adobe was gone, but discovered `AGMService.exe` quietly running in Task Manager or Activity Monitor. `NukeAdobe` hunts down and eradicates all orphaned binaries, resurrection tasks, and background services left behind.
@@ -46,35 +56,32 @@ You have a full installation of Adobe Creative Cloud and multiple gigabytes of d
 
 ---
 
-## Technical Overview & Slide Deck
+## The Problem: The De-Coupled Resurrection Architecture
 
-### Slide 1: The Illusion of Removal
-![The Illusion of Removal](docs/slides/slide_1.png)
+<p align="center">
+  <img src="docs/slides/slide_3.png" alt="The De-Coupled Resurrection Architecture" width="100%">
+</p>
 
-### Slide 2: Anatomy of a Zombie (The 3-Tier Resurrection Loop)
-![Anatomy of a Zombie](docs/slides/slide_2.png)
+Commercial software packages frequently fail to uninstall cleanly. Even after running standard uninstallers or command-line cleanup tools, Adobe products leave behind a multi-tiered background persistence network designed for continuous regeneration:
 
-### Slide 3: The NukeAdobe Protocol (6-Phase Eradication)
-![The NukeAdobe Protocol](docs/slides/slide_3.png)
-
-### Slide 4: The Collision Shield (Filesystem Locking)
-![The Collision Shield](docs/slides/slide_4.png)
-
-### Slide 5: Trust Through Transparency (Zero Dependencies & Full Auditability)
-![Trust Through Transparency](docs/slides/slide_5.png)
+- **Tier 1: The Triggers** — Hidden scheduled tasks and LaunchDaemons that trigger at user logon and hourly intervals.
+- **Tier 2: The Monitors** — Privileged system daemons (`AGMService.exe`, `AGSService.exe`) that continuously monitor process namespaces and open file descriptors.
+- **Tier 3: The Mothership** — Autonomous OOBE updaters that notice missing binaries and deploy fresh replacement payloads to disk.
 
 ---
 
-## The Problem: The Adobe "Zombie" Architecture
+## Triggers & Monitors: The First Line of Persistence
 
-Commercial software packages frequently fail to uninstall cleanly. Even after running standard uninstallers or command-line cleanup tools, Adobe products leave behind a multi-tiered background persistence network:
+<p align="center">
+  <img src="docs/slides/slide_4.png" alt="Triggers & Monitors: The First Line of Persistence" width="100%">
+</p>
 
-### Windows:
+### Windows Persistence Hooks:
 * **Task Scheduler:** `Adobe-Genuine-Software-Integrity-Scheduler`, `AdobeGCInvoker`
 * **Background Services:** `AGMService.exe` and `AGSService.exe` (Local System privileges)
 * **Autonomous OOBE Updaters:** `PDapp.exe`, `LogTransport2.exe`, `AdobeIPCBroker.exe`
 
-### macOS:
+### macOS Persistence Hooks:
 * **LaunchDaemons & LaunchAgents:** `/Library/LaunchDaemons/com.adobe.*` and `~/Library/LaunchAgents/com.adobe.*`
 * **Privileged Helpers:** `/Library/PrivilegedHelperTools/com.adobe.*`
 * **Background Daemons:** `AdobeGCClient`, `Adobe Desktop Service`, `Core Sync`, `CCXProcess`
@@ -83,8 +90,15 @@ When a user deletes the app or monitor, background triggers notice the missing b
 
 ---
 
-## What Telemetry Is Being Sent?
+## Tier 3: The OOBE Mothership & Invasive Telemetry
 
+<p align="center">
+  <img src="docs/slides/slide_5.png" alt="Tier 3: The OOBE Mothership" width="100%">
+</p>
+
+Deleting the monitor binary alone does not kill the software—it simply activates the re-deployment sequence. Secondary updater utilities (`PDapp.exe`, `agcinvokerutility.exe`) drop fresh payloads back onto disk, restoring the exact state.
+
+### What Telemetry Is Being Transmitted?
 When Adobe Genuine Service (`AGMService.exe`) and `LogTransport2.exe` operate in the background, they transmit encrypted telemetry bundles back to Adobe analytics endpoints:
 1. **Hardware Fingerprints:** Machine UUID, MAC addresses, motherboard & CPU serials, and system hostname.
 2. **System & Process Inspection:** Active process list audits, system module hashes, and integrity scans of licensing DLLs.
@@ -92,23 +106,88 @@ When Adobe Genuine Service (`AGMService.exe`) and `LogTransport2.exe` operate in
 
 ---
 
-## The Solution: 6-Phase Eradication & Immunization
+## The Solution: NukeAdobe 6-Phase Eradication Protocol
 
-`NukeAdobe` breaks this resurrection loop completely:
+<p align="center">
+  <img src="docs/slides/slide_6.png" alt="NukeAdobe: The 6-Phase Eradication Engine" width="100%">
+</p>
 
-1. **Process Tree Termination:** Force-kills all active and dormant Adobe executables, creative applications, IPC brokers, telemetry monitors, and crash daemons.
-2. **Service & Launch Daemon Deletion:** Deregisters and wipes Windows services (`sc delete`) and macOS LaunchDaemons/LaunchAgents (`launchctl bootout`).
-3. **Trigger Purging:** Wipes Windows Task Scheduler hooks and macOS plist startup agents.
-4. **Directory & Payload Nuke:** Wipes all application program trees (`C:\Program Files\Adobe`, `/Applications/Adobe*`), updater folders, payload caches, and user data directories.
-5. **Immunization Shields:** In both Windows NTFS and macOS HFS+/APFS, a directory cannot be created if an immutable file with the identical name already occupies that path:
-   * **Windows:** Creates dummy 0-byte files marked `+R +S +H` at `AdobeGCClient` and `ARM`.
-   * **macOS:** Creates an immutable file flagged with `chflags uchg` at `AdobeGCClient`.
-   * Any future background installer or script that attempts to `mkdir AdobeGCClient` crashes and fails to deploy.
-6. **Registry & Cache Flush:** Scrubs orphan `Uninstall` display entries and clears root `Software\Adobe` branches on Windows, or flushes DNS/mDNSResponder on macOS.
+`NukeAdobe` is a lightweight, cross-platform (Windows & macOS), zero-dependency uninstaller designed to systematically dismantle the resurrection loop across six synchronized phases.
 
 ---
 
-## Usage
+### Phases 1 & 2: Terminate & Deregister
+
+<p align="center">
+  <img src="docs/slides/slide_7.png" alt="Phases 1 & 2: Terminate & Deregister" width="100%">
+</p>
+
+1. **Phase 1: Terminate** — Synchronous process tree termination eliminates active, dormant, and spawned child helper binaries to forcefully release file handle locks (`taskkill /F /T`, `killall -TERM -9`).
+2. **Phase 2: Deregister** — Low-level OS APIs remove service registration keys directly from the OS kernel (`sc.exe delete AGMService`, `launchctl bootout system/com.adobe.agm.service`).
+
+---
+
+### Phases 3 & 4: Purge & Scrub
+
+<p align="center">
+  <img src="docs/slides/slide_8.png" alt="Phases 3 & 4: Purge & Scrub" width="100%">
+</p>
+
+3. **Phase 3: Purge** — Wipes all scheduled triggers matching the vendor namespace (`schtasks /Delete /TN ... /F`), permanently destroying the resurrection countdown.
+4. **Phase 4: Scrub** — Recursively purges orphaned application data caches, logs, and staging payloads from both system and user directories (`C:\Program Files\Adobe`, `/Library/Application Support/Adobe/`).
+
+---
+
+### The Paradigm: Eradication vs. Immunization
+
+<p align="center">
+  <img src="docs/slides/slide_9.png" alt="Eradication removes the software. Immunization removes the possibility." width="100%">
+</p>
+
+> *"Eradication removes the software. Immunization removes the possibility."*
+> 
+> If cleanup stops at Phase 4, the next time any vendor installer or updater runs, the zombie loop is reintroduced. To achieve true permanence, we must weaponize the core physics of the operating system against the payload.
+
+---
+
+### Phase 5: NTFS & APFS Immunization Shields
+
+<p align="center">
+  <img src="docs/slides/slide_10.png" alt="Phase 5: NTFS & APFS Immunization Shields" width="100%">
+</p>
+
+In both Windows NTFS and macOS HFS+/APFS, an operating system cannot create a directory if an immutable system file of the identical name occupies that exact path. `NukeAdobe` exploits this fundamental filesystem collision rule:
+
+* **Windows NTFS:** Drops 0-byte dummy files marked `+R +S +H` (Read-only, System, Hidden) at `AdobeGCClient` and `ARM`.
+* **macOS APFS:** Drops immutable 0-byte files flagged with `chflags uchg` at `AdobeGCClient`.
+* Any future background installer or script that attempts to `mkdir AdobeGCClient` is rejected by the filesystem with `ACCESS_DENIED`, permanently blocking re-creation.
+
+---
+
+### Phase 6: Final Flush & Verification
+
+<p align="center">
+  <img src="docs/slides/slide_11.png" alt="Phase 6: Final Flush & Verification" width="100%">
+</p>
+
+* **Registry Flush:** Eliminates dangling `Add/Remove Programs` display keys, CLSIDs, and root `Software\Adobe` branches in `HKLM` and `HKCU`.
+* **DNS Cache Flush:** Flushes system DNS resolver caches (`ipconfig /flushdns`, `killall -HUP mDNSResponder`) to eliminate historical network routing to telemetry beaconing endpoints.
+
+---
+
+## Security & Safety Invariants
+
+<p align="center">
+  <img src="docs/slides/slide_12.png" alt="Security & Safety Invariants" width="100%">
+</p>
+
+* **Zero 3rd-Party Dependencies:** Built 100% on native OS utilities (`taskkill`, `sc`, `schtasks`, `launchctl`, `rm`). Absolutely zero external binaries, downloads, or network calls are made.
+* **Strict Canonical Pathing:** No unbounded wildcards are executed in root directories (`C:\`, `/`). All deletion actions target explicit vendor subdirectories safely.
+* **100% Auditability:** Complete script source code is human-readable, fully commented, and compact (<150 lines per platform). Open inspection is strongly encouraged.
+
+---
+
+## Usage Guide
 
 ### Windows
 1. Download or clone this repository.
@@ -127,7 +206,11 @@ When Adobe Genuine Service (`AGMService.exe`) and `LogTransport2.exe` operate in
 
 ---
 
-## Verification
+## Executive Summary & System Verification
+
+<p align="center">
+  <img src="docs/slides/slide_13.png" alt="Executive Summary: System Sovereignty Restored" width="100%">
+</p>
 
 After running `NukeAdobe`, verify your system is 100% clean:
 
@@ -145,7 +228,7 @@ launchctl list | grep -i adobe
 ls -la /Library/LaunchDaemons/com.adobe.*
 ```
 
-All commands return empty output.
+All commands return empty output. System sovereignty restored.
 
 ---
 
