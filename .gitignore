@@ -2,3 +2,9 @@
 Thumbs.db
 *.tmp
 *.log
+
+# Prompt and slide generation drafts
+NOTEBOOKLM_PROMPT.md
+SLIDES_SOURCE.md
+*prompt*.md
+*draft*.md
