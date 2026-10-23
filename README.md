@@ -6,6 +6,17 @@ Permanently eradicates Adobe creative applications, orphaned background services
 
 ---
 
+### 🎙️ Quick Deep Dive: Audio & Video Explanations
+
+Get a quick understanding of why standard uninstallers fail and how NukeAdobe completely cleans and immunizes your system:
+
+| Media | Description | Link |
+|---|---|---|
+| 🎧 **Audio Deep Dive** | Concise podcast/audio walkthrough explaining how NukeAdobe permanently eradicates zombie persistence. | [Listen to Audio Overview (M4A)](docs/How_NukeAdobe_Permanently_Eradicates_Adobe_Software.m4a) |
+| 🎬 **Architecture Video** | Visual presentation breakdown: *Architecting the Kill-Chain Against De-Coupled Persistence*. | [Watch Architecture Video (MP4)](docs/NukeAdobe__Architecting_the_Kill-Chain_Against_De-Coupled_Persi.mp4) |
+
+---
+
 ```
 ============================================================================
          _   _ _   _ _  _______     _    ____   ___  ____  _____ 
