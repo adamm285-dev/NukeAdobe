@@ -32,13 +32,32 @@ echo ""
 echo "         TOTAL NUCLEAR ADOBE PERSISTENCE CLEANER & IMMUNIZER (macOS)"
 echo " ============================================================================"
 echo ""
-echo "Target User: $REAL_USER ($USER_HOME)"
-echo "WARNING: This tool will completely terminate and eradicate ALL Adobe background"
-echo "services, persistent daemons, LaunchDaemons, LaunchAgents, and orphan files."
+echo " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo " [CRITICAL WARNING: THIS IS A TOTAL SYSTEM PURGE - NO JOKE]"
+echo " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo ""
-read -p "Are you ready to permanently purge all Adobe components? (y/N): " confirm
-if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-  echo "[ABORTED] Operation cancelled by user."
+echo " This tool does NOT perform a gentle uninstallation. It executes a full-scale"
+echo " eradication of EVERY Adobe app, background service, LaunchDaemon, and cache."
+echo ""
+echo " WHAT WILL BE PURGED:"
+echo "  - ALL running Adobe apps (Photoshop, Premiere, Illustrator, InDesign, Acrobat)"
+echo "  - ALL Adobe LaunchDaemons and LaunchAgents (system-wide and user-level)"
+echo "  - ALL installed Adobe application bundles inside /Applications"
+echo "  - ALL Adobe Application Support directories, user preferences, and caches"
+echo ""
+echo " WHAT IT ESTABLISHES:"
+echo "  - Drops immutable filesystem shields (chflags uchg) to physically block"
+echo "    Adobe from ever regenerating monitoring directories on this Mac."
+echo ""
+echo " IF YOU STILL USE ANY ADOBE PRODUCTS ON THIS MAC, CANCEL RIGHT NOW."
+echo " ============================================================================"
+echo ""
+echo "Target User: $REAL_USER ($USER_HOME)"
+echo ""
+read -p "Type 'NUKE' to permanently wipe all Adobe software from this Mac: " confirm
+if [ "$confirm" != "NUKE" ]; then
+  echo ""
+  echo "[ABORTED] Operation cancelled. Zero modifications made."
   exit 0
 fi
 
@@ -62,11 +81,15 @@ done
 
 echo ""
 echo "=============================================================================="
-echo "[Phase 2/5] Terminating Adobe Process Tree..."
+echo "[Phase 2/5] Terminating All Adobe Apps & Daemon Process Tree..."
 echo "=============================================================================="
-ADOBE_PROCS=("AdobeGCClient" "AGSService" "AGMService" "Adobe Desktop Service" \
-             "Core Sync" "CCXProcess" "AdobeCRDaemon" "AdobeIPCBroker" \
-             "com.adobe.acc.installer" "LogTransport2")
+ADOBE_PROCS=(
+  "Adobe Photoshop" "Adobe Premiere Pro" "Adobe Illustrator" "Adobe InDesign" \
+  "Adobe After Effects" "Adobe Acrobat" "Creative Cloud" "Creative Cloud UI Helper" \
+  "AdobeGCClient" "AGSService" "AGMService" "Adobe Desktop Service" \
+  "Core Sync" "CCXProcess" "AdobeCRDaemon" "AdobeIPCBroker" \
+  "com.adobe.acc.installer" "LogTransport2" "AcroCEF"
+)
 
 for proc in "${ADOBE_PROCS[@]}"; do
   killall "$proc" 2>/dev/null && echo "  [+] Terminated process: $proc"
@@ -74,22 +97,25 @@ done
 
 echo ""
 echo "=============================================================================="
-echo "[Phase 3/5] Wiping Orphan Directories & Background Daemons..."
+echo "[Phase 3/5] Wiping All Application Bundles, Caches & Data Trees..."
 echo "=============================================================================="
 DIRS=(
-  "/Applications/Utilities/Adobe Genuine Service"
-  "/Applications/Utilities/Adobe Creative Cloud"
+  "/Applications/Adobe*"
+  "/Applications/Utilities/Adobe*"
   "/Library/Application Support/Adobe"
   "/Library/Application Support/AdobeGCClient"
+  "/Library/PrivilegedHelperTools/com.adobe.*"
   "$USER_HOME/Library/Application Support/Adobe"
   "$USER_HOME/Library/Application Support/AdobeGCClient"
-  "/Library/PrivilegedHelperTools/com.adobe.*"
+  "$USER_HOME/Library/Caches/com.adobe.*"
+  "$USER_HOME/Library/Caches/Adobe"
+  "$USER_HOME/Library/Preferences/com.adobe.*"
 )
 
 for dir in "${DIRS[@]}"; do
   if [ -e "$dir" ]; then
     rm -rf "$dir" 2>/dev/null
-    echo "  [-] Purged directory: $dir"
+    echo "  [-] Purged: $dir"
   fi
 done
 
@@ -97,7 +123,6 @@ echo ""
 echo "=============================================================================="
 echo "[Phase 4/5] Establishing Immunization Shields (chflags uchg)..."
 echo "=============================================================================="
-# On macOS, an immutable file (uchg) blocks the directory from being recreated
 mkdir -p "/Library/Application Support/Adobe" 2>/dev/null
 touch "/Library/Application Support/Adobe/AdobeGCClient" 2>/dev/null
 chflags uchg "/Library/Application Support/Adobe/AdobeGCClient" 2>/dev/null
