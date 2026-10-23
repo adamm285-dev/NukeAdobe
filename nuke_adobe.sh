@@ -17,6 +17,10 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# Detect actual invoking user (to correctly resolve user-level Library paths when run via sudo)
+REAL_USER="${SUDO_USER:-$USER}"
+USER_HOME=$(eval echo "~$REAL_USER")
+
 echo ""
 echo " ============================================================================"
 echo "  _   _ _   _ _  _______     _    ____   ___  ____  _____ "
@@ -28,6 +32,7 @@ echo ""
 echo "         TOTAL NUCLEAR ADOBE PERSISTENCE CLEANER & IMMUNIZER (macOS)"
 echo " ============================================================================"
 echo ""
+echo "Target User: $REAL_USER ($USER_HOME)"
 echo "WARNING: This tool will completely terminate and eradicate ALL Adobe background"
 echo "services, persistent daemons, LaunchDaemons, LaunchAgents, and orphan files."
 echo ""
@@ -41,9 +46,13 @@ echo ""
 echo "=============================================================================="
 echo "[Phase 1/5] Unloading LaunchDaemons and LaunchAgents..."
 echo "=============================================================================="
-for plist in /Library/LaunchDaemons/com.adobe.* \
-             /Library/LaunchAgents/com.adobe.* \
-             ~/Library/LaunchAgents/com.adobe.*; do
+PLISTS=(
+  /Library/LaunchDaemons/com.adobe.*
+  /Library/LaunchAgents/com.adobe.*
+  "$USER_HOME/Library/LaunchAgents/com.adobe.*"
+)
+
+for plist in "${PLISTS[@]}"; do
   if [ -f "$plist" ]; then
     launchctl bootout system "$plist" 2>/dev/null || launchctl unload "$plist" 2>/dev/null
     rm -f "$plist"
@@ -70,17 +79,18 @@ echo "==========================================================================
 DIRS=(
   "/Applications/Utilities/Adobe Genuine Service"
   "/Applications/Utilities/Adobe Creative Cloud"
-  "/Applications/Adobe*"
   "/Library/Application Support/Adobe"
   "/Library/Application Support/AdobeGCClient"
-  "~/Library/Application Support/Adobe"
-  "~/Library/Application Support/AdobeGCClient"
+  "$USER_HOME/Library/Application Support/Adobe"
+  "$USER_HOME/Library/Application Support/AdobeGCClient"
   "/Library/PrivilegedHelperTools/com.adobe.*"
 )
 
 for dir in "${DIRS[@]}"; do
-  rm -rf "$dir" 2>/dev/null
-  echo "  [-] Purged directory: $dir"
+  if [ -e "$dir" ]; then
+    rm -rf "$dir" 2>/dev/null
+    echo "  [-] Purged directory: $dir"
+  fi
 done
 
 echo ""
